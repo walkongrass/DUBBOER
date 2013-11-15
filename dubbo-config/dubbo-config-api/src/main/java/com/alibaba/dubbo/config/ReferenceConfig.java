@@ -393,11 +393,19 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             } else {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
+                // 重构：遍历所有的注册中心地址，直到有一个连接成功
                 for (URL url : urls) {
-                    invokers.add(refprotocol.refer(interfaceClass, url));
-                    if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
-                        registryURL = url; // 用了最后一个registry url
-                    }
+                	try{
+                		invokers.add(refprotocol.refer(interfaceClass, url));
+                		 if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+                             registryURL = url; // 用了最后一个registry url
+                         }
+                		 break;
+                	}catch (Exception e) {
+						logger.error("Failed to connect to dubbo register server. URL:"+url,e);
+					}
+                    
+                   
                 }
                 if (registryURL != null) { // 有 注册中心协议的URL
                     // 对有注册中心的Cluster 只用 AvailableCluster
