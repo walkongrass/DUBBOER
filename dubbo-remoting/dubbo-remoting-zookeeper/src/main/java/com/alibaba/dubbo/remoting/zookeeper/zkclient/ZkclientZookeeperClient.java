@@ -23,7 +23,7 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 	public ZkclientZookeeperClient(URL url) {
 		super(url);
 		//给一个15s的超时参数，太小了可能不能连接到zkserver
-		client = new ZkClient(url.getBackupAddress(),15000);
+		client = new ZkClient(url.getBackupAddress(),30000);
 		client.subscribeStateChanges(new IZkStateListener() {
 			public void handleStateChanged(KeeperState state) throws Exception {
 				ZkclientZookeeperClient.this.state = state;

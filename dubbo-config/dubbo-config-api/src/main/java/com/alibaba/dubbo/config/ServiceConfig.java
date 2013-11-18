@@ -490,10 +490,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         	 Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         	 Exporter<?> exporter = protocol.export(invoker);
                              exporters.add(exporter);
+                             hasExported = true;
+                             break;
                         }catch (Exception e) {
+                        	hasExported = false;
                         	logger.error("Cann't export service on registry:"+registryURL,e);
 						}
-                        hasExported = true;
+                        
                     }
                     
                     if(hasExported == false) {
