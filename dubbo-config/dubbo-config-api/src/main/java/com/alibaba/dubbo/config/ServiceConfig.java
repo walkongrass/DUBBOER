@@ -474,19 +474,30 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
                 if (registryURLs != null && registryURLs.size() > 0
                         && url.getParameter("register", true)) {
+                	boolean hasExported = false;
                     for (URL registryURL : registryURLs) {
                         url = url.addParameterIfAbsent("dynamic", registryURL.getParameter("dynamic"));
                         URL monitorUrl = loadMonitor(registryURL);
                         if (monitorUrl != null) {
                             url = url.addParameterAndEncoded(Constants.MONITOR_KEY, monitorUrl.toFullString());
                         }
+                        
                         if (logger.isInfoEnabled()) {
                             logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
                         }
-                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
 
-                        Exporter<?> exporter = protocol.export(invoker);
-                        exporters.add(exporter);
+                        try{
+                        	 Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                        	 Exporter<?> exporter = protocol.export(invoker);
+                             exporters.add(exporter);
+                        }catch (Exception e) {
+                        	logger.error("Cann't export service on registry:"+registryURL,e);
+						}
+                        hasExported = true;
+                    }
+                    
+                    if(hasExported == false) {
+                    	throw new RuntimeException("cannot export service url:"+url );
                     }
                 } else {
                     Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
