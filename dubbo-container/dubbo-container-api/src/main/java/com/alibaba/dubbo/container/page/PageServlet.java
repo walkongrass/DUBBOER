@@ -57,6 +57,8 @@ public class PageServlet extends HttpServlet {
     
     private static PageServlet INSTANCE;
     
+    private String contextPath = null;
+    
     public static PageServlet getInstance() {
         return INSTANCE;
     }
@@ -85,6 +87,8 @@ public class PageServlet extends HttpServlet {
             }
         }
         Collections.sort(menus, new MenuComparator());
+        
+        contextPath = getServletConfig().getInitParameter("contextPath");
     }
     
     @Override
@@ -99,6 +103,9 @@ public class PageServlet extends HttpServlet {
         if (! response.isCommitted()) {
             PrintWriter writer = response.getWriter();
             String uri = request.getRequestURI();
+            if(contextPath != null && contextPath.trim().length() > 0 && uri.startsWith(contextPath)) {
+            	uri = uri.substring(contextPath.length());
+            }
             boolean isHtml = false;
             if (uri == null || uri.length() == 0 || "/".equals(uri)) {
                 uri = "index";
@@ -208,6 +215,9 @@ public class PageServlet extends HttpServlet {
         writer.println("    <tr>");
         for (PageHandler handler : menus) {
             String uri = ExtensionLoader.getExtensionLoader(PageHandler.class).getExtensionName(handler);
+            if(contextPath != null && contextPath.length() > 0 ) {
+            	uri = contextPath.concat("/").concat(uri);
+            }
             Menu menu = handler.getClass().getAnnotation(Menu.class);
             writer.println("        <th><a href=\"" + uri + ".html\">" + menu.name() + "</a></th>");
         }
